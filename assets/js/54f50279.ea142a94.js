@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkdocs=self.webpackChunkdocs||[]).push([[482],{1308:e=>{e.exports=JSON.parse('{"title":"Guides","slug":"/category/guides","permalink":"/pedersen/category/guides","navigation":{"previous":{"title":"CLI","permalink":"/pedersen/reference/cli"},"next":{"title":"Configure a cyclic group","permalink":"/pedersen/guides/group"}}}')}}]);
