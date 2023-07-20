@@ -1,0 +1,127 @@
+---
+name: Docs
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  schedule:
+    - cron: '0 8 */6 * *' # every 6 days to keep cache
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag'
+        required: true
+  push:
+    branches:
+      - 'master'
+  pull_request:
+    branches:
+      - 'master'
+
+env:
+  RELEASE_BRANCH: master
+
+jobs:
+  prepare:
+    runs-on: ubuntu-22.04
+    outputs:
+      release_tag: ${{ steps.release_tag.outputs.release_tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Get latest tag on release branch
+        id: release_tag
+        run: |
+          set -ex
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.release_tag }}" ]; then
+            echo "release_tag=${{ inputs.release_tag }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/${{ env.RELEASE_BRANCH }}" ]; then
+            echo "release_tag=$(git describe --match 'v[0-9]*' --abbrev=0 --tags ${RELEASE_BRANCH})" >> $GITHUB_OUTPUT || \
+              echo "release_tag=" >> $GITHUB_OUTPUT
+          else
+            echo "release_tag=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Show latest release tag
+        run: |
+          echo ${{ steps.release_tag.outputs.release_tag }}
+
+  build:
+    runs-on: ubuntu-22.04
+    needs: [prepare]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build docs
+        uses: docker/bake-action@v3
+        with:
+          targets: docs
+          set: |
+            *.args.ORGANIZATION_NAME=${{ github.repository_owner }}
+            *.args.REPO_NAME=${{ github.event.repository.name }}
+            *.args.REPO_URL=${{ github.server_url }}/${{ github.repository }}
+            *.args.DOCS_URL=https://${{ github.repository_owner }}.github.io
+            *.args.DOCS_EDIT_URL=${{ github.server_url }}/${{ github.repository }}/tree/${{ env.RELEASE_BRANCH }}/docs/
+            *.args.VERSION=${{ needs.prepare.outputs.release_tag }}
+            *.cache-from=type=gha,scope=docs
+            *.cache-to=type=gha,scope=docs,mode=max
+        env:
+          ALGOLIA_APP_ID: ${{ secrets.ALGOLIA_APP_ID }}
+          ALGOLIA_SEARCH_API_KEY: ${{ secrets.ALGOLIA_SEARCH_API_KEY }}
+          ALGOLIA_INDEX_NAME: ${{ secrets.ALGOLIA_INDEX_NAME }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: docs
+          path: ./bin/docs/*
+          if-no-files-found: error
+
+  release:
+    needs: [prepare, build]
+    runs-on: ubuntu-22.04
+    if: ${{ needs.prepare.outputs.release_tag != '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: gh-pages
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: docs
+          path: /tmp/pedersen-docs
+
+      - name: List docs files
+        run: |
+          echo "DOCS_FILES<<EOF" >> $GITHUB_ENV
+          find /tmp/pedersen-docs -type f -printf "%P\n" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Move docs files
+        run: |
+          rsync -cavr --ignore-times --delete /tmp/pedersen-docs/ .
+
+      - name: Commit changes
+        uses: swinton/commit@v2.x
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: ${{ env.DOCS_FILES }}
+          commit-message: Update docs
+          ref: refs/heads/gh-pages

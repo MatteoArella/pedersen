@@ -1,0 +1,27 @@
+---
+slug: /
+sidebar_position: 1
+---
+
+# Overview
+
+> Secret sharing (also called secret splitting) refers to methods for distributing a secret among a group, in such a way that no individual holds any intelligible information about the secret, but when a sufficient number of individuals combine their 'shares', the secret may be reconstructed.
+> [Wikipedia](https://en.wikipedia.org/wiki/Secret_sharing)
+
+Secret sharing schemes are ideal for storing information that is highly sensitive
+and highly important, like for example encryption keys. Each of these pieces of
+information must be kept highly confidential, as their exposure could be disastrous;
+however, it is also critical that they should not be lost. Traditional methods for
+encryption are ill-suited for simultaneously achieving high levels of confidentiality
+and reliability. This is because when storing the encryption key, one must choose
+between keeping a single copy of the key in one location for maximum secrecy,
+or keeping multiple copies of the key in different locations for greater reliability.
+Increasing reliability of the key by storing multiple copies lowers confidentiality by
+creating additional attack vectors. Secret sharing schemes address this problem,
+and allow arbitrarily high levels of confidentiality and reliability to be achieved.
+
+> In cryptography, a secret sharing scheme is verifiable if auxiliary information is included that allows players to verify their shares as consistent.
+> [Wikipedia](https://en.wikipedia.org/wiki/Verifiable_secret_sharing)
+
+The `pedersen` package implements verifiable secret sharing procedures that are defined by [Pedersen Non-Interactive and Information-Theoretic Secure Verifiable Secret Sharing](https://link.springer.com/chapter/10.1007/3-540-46766-1_9) conference paper.
+

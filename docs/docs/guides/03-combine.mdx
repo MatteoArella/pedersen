@@ -1,0 +1,35 @@
+---
+title: 'Combine a secret'
+sidebar_position: 3
+---
+
+# Combine a secret
+
+Before you can combine any secret shares, you have to configure a cyclic group to be used for Pedersen operations as is
+shown in [Configure a cyclic group](group).
+
+This example shows how to combine a secret with a $(t, n)$-threshold scheme of $(t, n) = ($ `schemeThreshold` , `schemeParts` $)$
+
+```go
+import (
+    "github.com/matteoarella/pedersen"
+)
+
+schemeParts := 5
+schemeThreshold := 3
+group := /* cyclic group */
+// highlight-next-line
+shares := /* retrieve shares parts from the shareholders */
+
+p, err := pedersen.NewPedersen(schemeParts, schemeThreshold, pedersen.CyclicGroup(group))
+if err != nil {
+	panic(err)
+}
+
+// highlight-start
+secret, err = p.Combine(shares)
+if err != nil {
+	panic(err)
+}
+// highlight-end
+```

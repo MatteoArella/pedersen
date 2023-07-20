@@ -1,0 +1,89 @@
+---
+title: 'Configure a cyclic group'
+sidebar_position: 1
+---
+
+# Configure a cyclic group
+
+In order to perform any Pedersen operations (like splitting a secret, combining a secret or verifying a secret part or every
+secret parts), a cyclic group $G_q$ must be generated.
+In particular given two large primes $p$ and $q$ such that $q$ divides $p-1$, $G_q$ is the unique subgroup of $\mathbb{Z}^*_q$
+of order $q$. Let $g$ and $h$ be two generators of $G_q$.
+
+The cyclic group $G_q$ can be instantiated in two ways.
+
+## Generate a new group
+
+In this case a fresh cyclic group is generated at random by using the function `pedersen.NewSchnorrGroup()`:
+
+```go showLineNumbers
+import (
+    "github.com/matteoarella/pedersen"
+)
+
+// highlight-next-line
+groupSize := 1024
+
+// highlight-start
+group, err := pedersen.NewSchnorrGroup(groupSize)
+if err != nil {
+	panic(err)
+}
+// highlight-end
+```
+
+## Use a previously generated group
+
+For reconstructing a secret or validating the secret parts the same group that has been adopted for splitting the secret
+must be used.
+In this case you cannot use the `pedersen.NewSchnorrGroup()` function otherwise a fresh group is generated.
+
+The `pedersen.Group` object must be instantiated by specifying the $p$, $q$, $g$ and $h$ parameters as follows:
+
+```go showLineNumbers
+import (
+    "github.com/matteoarella/pedersen"
+	"github.com/matteoarella/pedersen/big"
+)
+
+// highlight-start
+p, err := big.NewInt()
+// check err
+q, err := big.NewInt()
+// check err
+g, err := big.NewInt()
+// check err
+h, err := big.NewInt()
+// check err
+
+err = p.SetDecString("17634709279010524619")
+// check err
+err = q.SetDecString("8817354639505262309")
+// check err
+err = g.SetDecString("8414335786771157015")
+// check err
+err = h.SetDecString("15078279289296123424")
+// check err
+
+group := pedersen.Group{
+	P: p, // prime p
+	Q: q, // prime q
+	G: g, // first generator g
+	H: h, // second generator h
+}
+// highlight-end
+```
+
+## Use a group
+
+The `group` object created with one of the two methods depicted above can be used for instantiating a `pedersen.Pedersen` object as follows:
+
+```go
+schemeParts := 5
+schemeThreshold := 3
+
+p, err := pedersen.NewPedersen(schemeParts, schemeThreshold, pedersen.CyclicGroup(group))
+if err != nil {
+	panic(err)
+}
+```

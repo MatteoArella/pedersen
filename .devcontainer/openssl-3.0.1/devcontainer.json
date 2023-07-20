@@ -1,0 +1,16 @@
+{
+	"name": "Pedersen 3.0.1",
+	"build": {
+		"dockerfile": "../Dockerfile",
+		"context": "../..",
+		"args": {
+			"GO_VARIANT": "1.17-alpine",
+			"GO_OPENSSL_VERSION_OVERRIDE": "3.0.1"
+		}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": ["golang.go", "ms-vscode.cpptools-extension-pack"]
+		}
+	}
+}

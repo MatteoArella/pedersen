@@ -1,0 +1,168 @@
+---
+sidebar_position: 2
+---
+
+# CLI
+
+Pedersen provides a CLI binary for managing the sharing and the reconstruction of a secret.
+
+```
+$ pedersen --help
+Usage:
+   [command]
+
+Available Commands:
+  combine     Combine Pedersen shares
+  completion  Generate the autocompletion script for the specified shell
+  generate    Generate Pedersen parameters
+  help        Help about any command
+  split       Split secret into Pedersen shares
+  verify      Verify Pedersen shares or parts
+  version     Show the Pedersen version information
+
+Flags:
+  -h, --help              help for this command
+      --logfile string    logging file
+      --loglevel string   logging level (default "INFO")
+
+Use " [command] --help" for more information about a command.
+```
+
+## Generate
+
+```
+$ pedersen generate --help
+Generate Pedersen parameters
+
+Usage:
+   generate [flags]
+
+Flags:
+  -b, --bits int         prime bits size (default 128)
+      --format FileFmt   file format. allowed: ""yaml\", \"json\", \"xml""
+  -h, --help             help for generate
+  -o, --out string       output file
+      --perm uint32      output file permissions (default 256)
+
+Global Flags:
+      --logfile string    logging file
+      --loglevel string   logging level (default "INFO")
+```
+
+## Split
+
+```
+$ pedersen split --help
+Split secret into Pedersen shares
+
+Usage:
+   split [flags]
+
+Flags:
+      --commitments string   commitments file
+      --format FileFmt       file format. allowed: ""yaml\", \"json\", \"xml""
+  -g, --group string         group file
+  -h, --help                 help for split
+  -i, --in string            input file
+  -p, --parts int            shares parts (default 5)
+      --perm uint32          output file permissions (default 256)
+      --shares string        secret shares files regex expression
+  -t, --threshold int        shares threshold (default 3)
+
+Global Flags:
+      --logfile string    logging file
+      --loglevel string   logging level (default "INFO")
+```
+
+## Combine
+
+```
+$ pedersen combine --help
+Combine Pedersen shares
+
+Usage:
+   combine [flags]
+
+Flags:
+      --commitments string   commitments file
+      --format FileFmt       file format. allowed: ""xml\", \"yaml\", \"json""
+  -g, --group string         group file
+  -h, --help                 help for combine
+  -o, --out string           output file
+  -p, --parts int            shares parts (default 5)
+      --perm uint32          output file permissions (default 256)
+      --shares string        secret shares files regex expression
+  -t, --threshold int        shares threshold (default 3)
+  -v, --verify               verify shares before combine (default true)
+
+Global Flags:
+      --logfile string    logging file
+      --loglevel string   logging level (default "INFO")
+```
+
+## Verify
+
+```
+$ pedersen verify --help
+Verify Pedersen shares or parts
+
+Usage:
+   verify [command]
+
+Available Commands:
+  part        Verify Pedersen part
+  shares      Verify Pedersen shares
+
+Flags:
+  -h, --help   help for verify
+
+Global Flags:
+      --logfile string    logging file
+      --loglevel string   logging level (default "INFO")
+
+Use " verify [command] --help" for more information about a command.
+```
+
+### Verify secret part
+
+```
+$ pedersen verify part --help
+Verify Pedersen part
+
+Usage:
+   verify part [flags]
+
+Flags:
+      --commitments string   commitments file
+  -g, --group string         group file
+  -h, --help                 help for part
+  -p, --parts int            shares parts (default 5)
+      --share string         secret shares file
+  -t, --threshold int        shares threshold (default 3)
+
+Global Flags:
+      --logfile string    logging file
+      --loglevel string   logging level (default "INFO")
+```
+
+### Verify secret shares
+
+```
+$ pedersen verify shares --help
+Verify Pedersen shares
+
+Usage:
+   verify shares [flags]
+
+Flags:
+      --commitments string   commitments file
+  -g, --group string         group file
+  -h, --help                 help for shares
+  -p, --parts int            shares parts (default 5)
+      --shares string        secret shares files regex expression
+  -t, --threshold int        shares threshold (default 3)
+
+Global Flags:
+      --logfile string    logging file
+      --loglevel string   logging level (default "INFO")
+```

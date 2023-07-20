@@ -1,0 +1,16 @@
+{
+	"name": "Pedersen Docs",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"context": "../..",
+		"args": {
+			"NODE_VERSION": "20"
+		}
+	},
+	"postStartCommand": "cd docs && yarn install && yarn start",
+	"customizations": {
+		"vscode": {
+			"extensions": ["ms-vscode.vscode-typescript-next", "leizongmin.node-module-intellisense"]
+		}
+	}
+}

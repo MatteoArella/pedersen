@@ -1,0 +1,83 @@
+---
+sidebar_position: 1
+---
+
+# Installation
+
+This project provides both a Go module and a CLI tool.
+
+## Go module
+
+In order to use the `pedersen` package just do
+
+```go
+go get github.com/matteoarella/pedersen
+```
+
+### Requirements
+
+- [Go](https://go.dev/doc/install) version 1.17.x or above.
+- CGO enabled.
+
+### Dependencies
+
+The `math/big` package does not support constant-time operations so its usage for cryptographic operations is unsafe 
+since it may leak some sensitive information via timing-based side channel attacks.
+For this reason the pedersen module provides its own implementation of `big.Int` operations using OpenSSL library
+bindings under the hood (via cgo calls).
+
+As a consequence the OpenSSL library must be available in the system.
+Several versions of the OpenSSL library are supported and tested, namely 1.0.2, 1.1.0, 1.1.1 and 3.0.2.
+
+The OpenSSL library can be provided in two ways, without or with the OpenSSL headers.
+
+#### OpenSSL without headers (default)
+
+By default the OpenSSL library is automatically loaded at runtime using [dlopen](https://man7.org/linux/man-pages/man3/dlopen.3.html)
+in such a way that only the OpenSSL runtime library is needed.
+Therefore, dlopen's shared library search conventions applies here.
+
+The `libcrypto` shared library file name varies among different platforms, so a best effort is done to find and load the right file:
+
+- The base name is always `libcrypto.so`.
+- Well-known version strings are appended to the base name, until the file is found, in the following order:
+`3` -> `1.1` -> `11` -> `111` -> `1.0.2` -> `1.0.0`.
+
+This algorithm can be overridden by setting the environment variable `GO_OPENSSL_VERSION_OVERRIDE`
+to the desired version string.
+For example, `GO_OPENSSL_VERSION_OVERRIDE="1.1.1k-fips"` makes the runtime look for the shared library `libcrypto.so.1.1.1k-fips`
+before running the checks for well-known versions.
+
+#### OpenSSL with headers
+
+OpenSSL headers can be used to provide all the symbols that are needed.
+If the Go tag `openssldev` is provided, the module tries to load the OpenSSL library by using the `pkg-config` tool.
+
+This case is mandatory in case of using this module for building a statically linked binary.
+
+## CLI tool
+
+import RepoUrl from '@site/src/components/RepoUrl';
+
+Download from the <RepoUrl name="Releases page"/> the correct binary for your target platform and install it.
+
+import {BinariesTabs, Platform, Variant} from '@site/src/components/BinariesTabs';
+
+<BinariesTabs>
+  <Platform value="macos" label="MacOS">
+    <Variant value="macos-amd64" label="amd64" binary="pedersen-darwin-x86_64" default></Variant>
+    <Variant value="macos-arm64" label="arm64" binary="pedersen-darwin-arm64"></Variant>
+  </Platform>
+  <Platform value="linux" label="Linux" default>
+    <Variant value="linux-amd64" label="amd64" binary="pedersen-linux-x86_64" default></Variant>
+    <Variant value="linux-aarch64" label="aarch64" binary="pedersen-linux-aarch64"></Variant>
+    <Variant value="linux-armv6" label="arm/v6" binary="pedersen-linux-armv6"></Variant>
+    <Variant value="linux-armv7" label="arm/v7" binary="pedersen-linux-armv7"></Variant>
+    <Variant value="linux-ppc64le" label="ppc64le" binary="pedersen-linux-ppc64le"></Variant>
+    <Variant value="linux-riscv64" label="riscv64" binary="pedersen-linux-riscv64"></Variant>
+    <Variant value="linux-s390x" label="s390x" binary="pedersen-linux-s390x"></Variant>
+  </Platform>
+  <Platform value="windows" label="Windows">
+    <Variant value="windows-amd64" label="amd64" binary="pedersen-windows-x86_64.exe" default></Variant>
+  </Platform>
+</BinariesTabs>

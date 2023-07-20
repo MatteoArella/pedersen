@@ -1,0 +1,71 @@
+---
+title: 'Split a secret'
+sidebar_position: 2
+---
+
+# Split a secret
+
+Before you can split any secret, you have to configure a cyclic group to be used for Pedersen operations as is
+shown in [Configure a cyclic group](group).
+
+This example shows how to split a secret with a $(t, n)$-threshold scheme of $(t, n) = ($ `schemeThreshold` , `schemeParts` $)$.
+
+```go showLineNumbers
+import (
+    "github.com/matteoarella/pedersen"
+)
+
+group := /* cyclic group */
+schemeParts := 5
+schemeThreshold := 3
+// highlight-next-line
+secret := /* secret to split */
+
+p, err := pedersen.NewPedersen(schemeParts, schemeThreshold, pedersen.CyclicGroup(group))
+if err != nil {
+	panic(err)
+}
+
+// highlight-start
+shares, err = p.Split(secret, nil)
+if err != nil {
+	panic(err)
+}
+// highlight-end
+
+/* ...
+   send shares parts to the corresponding shareholder and broadcast the commitments
+   ...
+*/
+```
+
+## Secret shares structure
+
+When a secret is splitted with `pedersen.Split` a `pedersen.Shares` object is returned.
+This object contains every information that the *dealer* has to transfer to the *shareholders*.
+
+If the secret that has to be split is not representable in the cyclic group (this is the case
+if the secret is bigger than the order of the cyclic group),
+the secret is split into chunks, and each chunk is split into secret parts according
+to Pedersen verifiable secret sharing.
+
+### Abscissae vector
+
+`Shares.Abscissae` is the abscissae vector used for computing the ordinate values of
+the secret parts.
+There is one abscissa for each *shareholder*, so if `shareholderIdx` represents
+the index of one *shareholder*, `Abscissae[shareholderIdx]` is the abscissa
+related to that *shareholder*.
+
+### Secret parts
+
+`Shares.Parts` is the matrix of secret parts.
+
+The first index of `Shares.Parts` represents the shareholder index, while the second index
+represents the chunk index (`Parts[shareholderIdx][chunkIdx]`).
+
+### Secret commitments
+
+`Shares.Commitments` is the matrix of commitments.
+The first index of `Shares.Commitments` represents the chunk index so `Commitments[chunkIdx]`
+is the vector of commitments related to the chunk with index `chunkIdx`.

@@ -1,0 +1,99 @@
+---
+title: 'Verify secret shares'
+sidebar_position: 4
+---
+
+# Verify secret shares
+
+With Pedersen verifiable secret sharing the sharing and the reconstruction of any secret can be verified.
+
+- in the *sharing phase* each *Shareholder* can verify that the secret shares that he has
+received are valid
+
+- in the *reconstruction phase* the *Dealer* can verify that the secret shares received from the *shareholders*
+are valid.
+
+Before you can verify any secret shares, you have to configure a cyclic group to be used for Pedersen operations as is
+shown in [Configure a cyclic group](group).
+
+In the following examples a $(t, n)$-threshold scheme of $(t, n) = ($ `schemeThreshold` , `schemeParts` $)$ is assumed.
+
+## Shareholder verification
+
+When a *shareholder* privately receives a secret part and the corresponding broadcast secret commitments he can verify the part
+in the following way.
+
+```go
+import (
+    "github.com/matteoarella/pedersen"
+)
+
+schemeParts := 5
+schemeThreshold := 3
+group := /* cyclic group */
+x := /* abscissa related to the shareholder part */
+share := /* secret share received from the dealer */
+commitments := /* commitments broadcast from the dealer */
+
+p, err := pedersen.NewPedersen(schemeParts, schemeThreshold, pedersen.CyclicGroup(group))
+if err != nil {
+	panic(err)
+}
+
+err = p.Verify(x, share, commitments)
+if err != nil {
+	panic(err)
+}
+```
+
+## Dealer verification
+
+When a *dealer* receives a secret part from a *shareholder* he can verify the part
+in the same way as shown in [Shareholder verification](verify#shareholder-verification).
+
+```go
+import (
+    "github.com/matteoarella/pedersen"
+)
+
+schemeParts := 5
+schemeThreshold := 3
+group := /* cyclic group */
+x := /* abscissa related to the shareholder part */
+share := /* secret share received from the dealer */
+commitments := /* commitments broadcast from the dealer */
+
+p, err := pedersen.NewPedersen(schemeParts, schemeThreshold, pedersen.CyclicGroup(group))
+if err != nil {
+	panic(err)
+}
+
+err = p.Verify(x, share, commitments)
+if err != nil {
+	panic(err)
+}
+```
+
+Additionally, the *dealer* can also collect every secret shares and then verify all of them in a
+single step as is shown here:
+
+```go
+import (
+    "github.com/matteoarella/pedersen"
+)
+
+schemeParts := 5
+schemeThreshold := 3
+group := /* cyclic group */
+shares := /* secret shares assembled from every secret parts */
+
+p, err := pedersen.NewPedersen(schemeParts, schemeThreshold, pedersen.CyclicGroup(group))
+if err != nil {
+	panic(err)
+}
+
+err = p.VerifyShares(shares)
+if err != nil {
+	panic(err)
+}
+```
